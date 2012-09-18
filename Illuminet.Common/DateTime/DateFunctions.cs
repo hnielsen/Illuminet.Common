@@ -15,10 +15,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using CuttingEdge.Conditions;
 
-namespace Illuminet.Common
+namespace Illuminet.Common.DateTime
 {
     /// <summary>
     /// Static class containing many date and business date functions not found in the DateTime class.
@@ -42,13 +41,13 @@ namespace Illuminet.Common
                                                                            {"2. pinsedag", 50}
                                                                        };
 
-        private static Dictionary<string, DateTime> _fixedHolidays = new Dictionary<string, DateTime>
+        private static Dictionary<string, System.DateTime> _fixedHolidays = new Dictionary<string, System.DateTime>
                                                                          {
-                                                                             {"Juleaften", new DateTime(1, 12, 24)},
-                                                                             {"1. juledag", new DateTime(1, 12, 25)},
-                                                                             {"2. juledag", new DateTime(1, 12, 26)},
-                                                                             {"Nytårsaftensdag", new DateTime(1, 1, 1)},
-                                                                             {"Grundlovsdag", new DateTime(1, 6, 5)},
+                                                                             {"Juleaften", new System.DateTime(1, 12, 24)},
+                                                                             {"1. juledag", new System.DateTime(1, 12, 25)},
+                                                                             {"2. juledag", new System.DateTime(1, 12, 26)},
+                                                                             {"Nytårsaftensdag", new System.DateTime(1, 1, 1)},
+                                                                             {"Grundlovsdag", new System.DateTime(1, 6, 5)},
                                                                          };
         #endregion
 
@@ -61,14 +60,14 @@ namespace Illuminet.Common
         /// <returns>
         /// The first work day after skipping weekends and holidays.
         /// </returns>
-        public static DateTime AddWorkDays(DateTime startDate, int workDays)
+        public static System.DateTime AddWorkDays(System.DateTime startDate, int workDays)
         {
             return AddWorkDays(startDate, workDays, null);
         }
 
-        public static DateTime AddWorkDays(DateTime startDate, int workDays, bool useDanishHolidays)
+        public static System.DateTime AddWorkDays(System.DateTime startDate, int workDays, bool useDanishHolidays)
         {
-            DateTime[] holidays = useDanishHolidays
+            System.DateTime[] holidays = useDanishHolidays
                                       ? GetDanishHolidays(startDate.Year).Select(h => h.Value).ToArray()
                                       : null;
             return AddWorkDays(startDate, workDays, holidays);
@@ -82,16 +81,16 @@ namespace Illuminet.Common
         /// <param name="workDays">Number of work days to add (positive or negative).</param>
         /// <param name="holidays">Array of DateTimes to skip.</param>
         /// <returns>The first work day after skipping weekends and holidays.</returns>
-        public static DateTime AddWorkDays(DateTime startDate, int workDays, DateTime[] holidays)
+        public static System.DateTime AddWorkDays(System.DateTime startDate, int workDays, System.DateTime[] holidays)
         {
             Condition.Requires(workDays, "workdays").IsGreaterThan(0);
 
             if (holidays == null)
-                holidays = new DateTime[0];
+                holidays = new System.DateTime[0];
 
             startDate = GetStartOfDay(startDate);
-            DateTime endDate = startDate.AddDays(workDays + (2*(int) workDays/5) + holidays.Length + 5); // Make sure we have enough days.
-            DateTime[] days = GetWorkDaysInRange(startDate, endDate, holidays);
+            System.DateTime endDate = startDate.AddDays(workDays + (2*(int) workDays/5) + holidays.Length + 5); // Make sure we have enough days.
+            System.DateTime[] days = GetWorkDaysInRange(startDate, endDate, holidays);
             
             if (days[0] == startDate)
                 return days[workDays];
@@ -106,23 +105,23 @@ namespace Illuminet.Common
         /// <param name="endDate">End date.</param>
         /// <param name="holidays">Array of DateTimes to skip.</param>
         /// <returns>DateTime[] of all work days.</returns>
-        private static DateTime[] GetWorkDaysInRange(DateTime startDate, DateTime endDate, DateTime[] holidays)
+        private static System.DateTime[] GetWorkDaysInRange(System.DateTime startDate, System.DateTime endDate, System.DateTime[] holidays)
         {
             DayOfWeek[] dow = new DayOfWeek[] {DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday, DayOfWeek.Friday};
-            DateTime[] days = GetDayOfWeekInRange(startDate, endDate, dow);
+            System.DateTime[] days = GetDayOfWeekInRange(startDate, endDate, dow);
 
             //return days;
 
             if (holidays == null)
-                holidays = new DateTime[0];
+                holidays = new System.DateTime[0];
 
             //Remove any Holidays in that date range.
-            List<DateTime> holidayList = new List<DateTime>(holidays);
-            List<DateTime> list = new List<DateTime>();
-            foreach (DateTime d in days)
+            List<System.DateTime> holidayList = new List<System.DateTime>(holidays);
+            List<System.DateTime> list = new List<System.DateTime>();
+            foreach (System.DateTime d in days)
             {
                 // Add any date that is not a Holiday to new list.
-                if (!holidayList.Exists(delegate(DateTime h) { return GetStartOfDay(h.Date) == d; }))
+                if (!holidayList.Exists(delegate(System.DateTime h) { return GetStartOfDay(h.Date) == d; }))
                     list.Add(d);
             }
             return list.ToArray();
@@ -135,7 +134,7 @@ namespace Illuminet.Common
         /// <param name="endDate"></param>
         /// <param name="dayOfWeek"></param>
         /// <returns>DateTime[] with all days matching DayOfWeek.</returns>
-        private static DateTime[] GetDayOfWeekInRange(DateTime startDate, DateTime endDate, DayOfWeek dayOfWeek)
+        private static System.DateTime[] GetDayOfWeekInRange(System.DateTime startDate, System.DateTime endDate, DayOfWeek dayOfWeek)
         {
             return GetDayOfWeekInRange(startDate, endDate, new DayOfWeek[] { dayOfWeek });
         }
@@ -147,14 +146,14 @@ namespace Illuminet.Common
         /// <param name="endDate"></param>
         /// <param name="daysOfWeek"></param>
         /// <returns>DateTime[] containing all matching days.</returns>
-        private static DateTime[] GetDayOfWeekInRange(DateTime startDate, DateTime endDate, DayOfWeek[] daysOfWeek)
+        private static System.DateTime[] GetDayOfWeekInRange(System.DateTime startDate, System.DateTime endDate, DayOfWeek[] daysOfWeek)
         {
             Condition.Requires(daysOfWeek, "week days").IsNotNull();
             Condition.Requires(startDate, "startdate").IsLessThan(endDate);
 
             ArrayList list = new ArrayList();
-            DateTime curr = GetStartOfDay(startDate);
-            DateTime end = GetStartOfDay(endDate);
+            System.DateTime curr = GetStartOfDay(startDate);
+            System.DateTime end = GetStartOfDay(endDate);
 
             while (curr <= end)
             {
@@ -165,7 +164,7 @@ namespace Illuminet.Common
                 }
                 curr = curr.AddDays(1);
             }
-            return (DateTime[])list.ToArray(typeof(DateTime));
+            return (System.DateTime[])list.ToArray(typeof(System.DateTime));
         }
 
         #region Helper methods
@@ -176,9 +175,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime to operate on.</param>
         /// <returns>New DateTime at start of the minute.</returns>
-        public static DateTime GetStartOfMinute(DateTime date)
+        public static System.DateTime GetStartOfMinute(System.DateTime date)
         {
-            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 0, 0);
+            return new System.DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 0, 0);
         }
 
         /// <summary>
@@ -187,9 +186,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date"></param>
         /// <returns></returns>
-        public static DateTime GetEndOfMinute(DateTime date)
+        public static System.DateTime GetEndOfMinute(System.DateTime date)
         {
-            return new DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 59, 999);
+            return new System.DateTime(date.Year, date.Month, date.Day, date.Hour, date.Minute, 59, 999);
         }
 
         /// <summary>
@@ -198,9 +197,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime to operate on.</param>
         /// <returns>DateTime representing the start of the day.</returns>
-        public static DateTime GetStartOfDay(DateTime date)
+        public static System.DateTime GetStartOfDay(System.DateTime date)
         {
-            return new DateTime(date.Year, date.Month, date.Day, 0, 0, 0, 0);
+            return new System.DateTime(date.Year, date.Month, date.Day, 0, 0, 0, 0);
         }
 
         /// <summary>
@@ -210,13 +209,13 @@ namespace Illuminet.Common
         /// <param name="month">The month.</param>
         /// <param name="day">The day.</param>
         /// <returns>DateTime representing the start of the day.</returns>
-        public static DateTime GetStartOfDay(int year, int month, int day)
+        public static System.DateTime GetStartOfDay(int year, int month, int day)
         {
             Condition.Requires(year, "year").IsInRange(1, 9999);    // DateTime restriction
             Condition.Requires(month, "month").IsInRange(1, 12);
             Condition.Requires(day, "day").IsInRange(1, 366);      // Leap year
             
-            return new DateTime(year, month, day);
+            return new System.DateTime(year, month, day);
         }
 
         /// <summary>
@@ -225,9 +224,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime to operate on.</param>
         /// <returns>DateTime representing the end of the day.</returns>
-        public static DateTime GetEndOfDay(DateTime date)
+        public static System.DateTime GetEndOfDay(System.DateTime date)
         {
-            return new DateTime(date.Year, date.Month, date.Day, 23, 59, 59, 999);
+            return new System.DateTime(date.Year, date.Month, date.Day, 23, 59, 59, 999);
         }
 
         /// <summary>
@@ -237,13 +236,13 @@ namespace Illuminet.Common
         /// <param name="month">The month.</param>
         /// <param name="day">The day.</param>
         /// <returns>DateTime representing the end of the day.</returns>
-        public static DateTime GetEndOfDay(int year, int month, int day)
+        public static System.DateTime GetEndOfDay(int year, int month, int day)
         {
             Condition.Requires(year, "year").IsInRange(1, 9999);    // DateTime restriction
             Condition.Requires(month, "month").IsInRange(1, 12);
             Condition.Requires(day, "day").IsInRange(1, 366);      // Leap year
 
-            return new DateTime(year, month, day, 23, 59, 59, 999);
+            return new System.DateTime(year, month, day, 23, 59, 59, 999);
         }
 
         /// <summary>
@@ -251,11 +250,11 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in the week.</param>
         /// <returns>DateTime of the Sunday in the week.</returns>
-        public static DateTime GetStartOfWeek(DateTime date)
+        public static System.DateTime GetStartOfWeek(System.DateTime date)
         {
             date = date.Date;
             // Get the Sunday of this week.
-            DateTime day = date.AddDays(-((int) date.DayOfWeek));
+            System.DateTime day = date.AddDays(-((int) date.DayOfWeek));
             return day;
         }
 
@@ -264,7 +263,7 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in the week.</param>
         /// <returns>DateTime of the Monday in the week.</returns>
-        public static DateTime GetStartOfWeekISO(DateTime date)
+        public static System.DateTime GetStartOfWeekISO(System.DateTime date)
         {
             date = date.Date;
             int dow = (int) date.DayOfWeek;
@@ -272,7 +271,7 @@ namespace Illuminet.Common
                 dow = 7;
 
             // Get the Monday of this week.
-            DateTime day = date.AddDays(-(dow - 1));
+            System.DateTime day = date.AddDays(-(dow - 1));
             return day;
         }
 
@@ -281,9 +280,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in the week.</param>
         /// <returns>DateTime of the Saturday in the week.</returns>
-        public static DateTime GetEndOfWeek(DateTime date)
+        public static System.DateTime GetEndOfWeek(System.DateTime date)
         {
-            DateTime dt = GetStartOfWeek(date).AddDays(6);
+            System.DateTime dt = GetStartOfWeek(date).AddDays(6);
             return GetEndOfDay(dt);
         }
 
@@ -292,9 +291,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in the week.</param>
         /// <returns>DateTime of the Sunday in the week.</returns>
-        public static DateTime GetEndOfWeekISO(DateTime date)
+        public static System.DateTime GetEndOfWeekISO(System.DateTime date)
         {
-            DateTime dt = GetStartOfWeekISO(date).AddDays(6);
+            System.DateTime dt = GetStartOfWeekISO(date).AddDays(6);
             return GetEndOfDay(dt);
         }
 
@@ -303,11 +302,11 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in a week.</param>
         /// <returns>Week number.</returns>
-        public static int GetWeekInYear(DateTime date)
+        public static int GetWeekInYear(System.DateTime date)
         {
             int weekNum = 1;
-            DateTime startOfWeek = GetStartOfWeek(GetStartOfYear(date));
-            DateTime endOfWeek = GetEndOfWeek(startOfWeek);
+            System.DateTime startOfWeek = GetStartOfWeek(GetStartOfYear(date));
+            System.DateTime endOfWeek = GetEndOfWeek(startOfWeek);
             while (true)
             {
                 if (date <= endOfWeek)
@@ -322,19 +321,19 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in a week.</param>
         /// <returns>Week number.</returns>
-        public static int GetISOWeekInYear(DateTime date)
+        public static int GetISOWeekInYear(System.DateTime date)
         {
             int weekNum = 1;
             // Get the ISO week containing the 4th day of Jan.  This will always be the first ISO week of the year.
-            DateTime startOfWeek = GetStartOfWeekISO(new DateTime(date.Year, 1, 4));
+            System.DateTime startOfWeek = GetStartOfWeekISO(new System.DateTime(date.Year, 1, 4));
 
             if (date.Date < startOfWeek)
             {
                 // Date is before the first Monday of the year.  Jan 1, 2005 and Jan 2 2005 are examples as they are in last week of 2004.
-                return GetISOWeekInYear(new DateTime(date.Year - 1, 12, 31));
+                return GetISOWeekInYear(new System.DateTime(date.Year - 1, 12, 31));
             }
 
-            DateTime endOfWeek = GetEndOfWeekISO(startOfWeek);
+            System.DateTime endOfWeek = GetEndOfWeekISO(startOfWeek);
             while (true)
             {
                 if (date <= endOfWeek)
@@ -344,12 +343,12 @@ namespace Illuminet.Common
             }
         }
 
-        public static DateTime GetStartOfISOWeekInYear(int week, int year)
+        public static System.DateTime GetStartOfISOWeekInYear(int week, int year)
         {
             Condition.Requires(week, "week").IsInRange(1, 53);
             Condition.Requires(year, "year").IsInRange(1, 9999);    // DateTime restriction
 
-            DateTime startFirstWeek = GetStartOfWeekISO(new DateTime(year, 1, 4));
+            System.DateTime startFirstWeek = GetStartOfWeekISO(new System.DateTime(year, 1, 4));
             return startFirstWeek.AddDays((week - 1)*7);
         }
 
@@ -358,9 +357,9 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date">DateTime representing a day in a month.</param>
         /// <returns>DateTime representing the first day of the month.</returns>
-        public static DateTime GetStartOfMonth(DateTime date)
+        public static System.DateTime GetStartOfMonth(System.DateTime date)
         {
-            return new DateTime(date.Year, date.Month, 1, 0, 0, 0, 0);
+            return new System.DateTime(date.Year, date.Month, 1, 0, 0, 0, 0);
         }
 
         /// <summary>
@@ -369,12 +368,12 @@ namespace Illuminet.Common
         /// <param name="year">Year number.</param>
         /// <param name="month">Month number.</param>
         /// <returns>DateTime representing the first day of the month.</returns>
-        public static DateTime GetStartOfMonth(int year, int month)
+        public static System.DateTime GetStartOfMonth(int year, int month)
         {
             Condition.Requires(year, "year").IsInRange(1, 9999);    // DateTime restriction
             Condition.Requires(month, "month").IsInRange(1, 12);
 
-            return new DateTime(year, month, 1, 0, 0, 0, 0);
+            return new System.DateTime(year, month, 1, 0, 0, 0, 0);
         }
 
         /// <summary>
@@ -382,10 +381,10 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="date"></param>
         /// <returns>DateTime representing the last millisecond of the month.</returns>
-        public static DateTime GetEndOfMonth(DateTime date)
+        public static System.DateTime GetEndOfMonth(System.DateTime date)
         {
-            int daysInMonth = DateTime.DaysInMonth(date.Year, date.Month);
-            return new DateTime(date.Year, date.Month, daysInMonth, 23, 59, 59, 999);
+            int daysInMonth = System.DateTime.DaysInMonth(date.Year, date.Month);
+            return new System.DateTime(date.Year, date.Month, daysInMonth, 23, 59, 59, 999);
         }
 
         /// <summary>
@@ -394,28 +393,28 @@ namespace Illuminet.Common
         /// <param name="year">The year.</param>
         /// <param name="month">The month.</param>
         /// <returns></returns>
-        public static DateTime GetEndOfMonth(int year, int month)
+        public static System.DateTime GetEndOfMonth(int year, int month)
         {
-            int daysInMonth = DateTime.DaysInMonth(year, month);
-            return new DateTime(year, month, daysInMonth, 23, 59, 59, 999);
+            int daysInMonth = System.DateTime.DaysInMonth(year, month);
+            return new System.DateTime(year, month, daysInMonth, 23, 59, 59, 999);
         }
 
-        public static DateTime GetStartOfYear(DateTime date)
+        public static System.DateTime GetStartOfYear(System.DateTime date)
         {
-            return new DateTime(date.Year, 1, 1, 0, 0, 0, 0);
+            return new System.DateTime(date.Year, 1, 1, 0, 0, 0, 0);
         }
 
-        public static DateTime GetStartOfYear(int year)
+        public static System.DateTime GetStartOfYear(int year)
         {
-            return new DateTime(year, 1, 1, 0, 0, 0, 0);
+            return new System.DateTime(year, 1, 1, 0, 0, 0, 0);
         }
 
-        public static DateTime GetEndOfYear(int year)
+        public static System.DateTime GetEndOfYear(int year)
         {
-            return new DateTime(year, 12, 31, 23, 59, 59, 999);
+            return new System.DateTime(year, 12, 31, 23, 59, 59, 999);
         }
 
-        public static DateTime GetEndOfYear(DateTime date)
+        public static System.DateTime GetEndOfYear(System.DateTime date)
         {
             return GetEndOfYear(date.Year);
         }
@@ -432,7 +431,7 @@ namespace Illuminet.Common
         /// </remarks>
         /// <param name="year"></param>
         /// <returns></returns>
-        public static DateTime GetEaster(int year)
+        public static System.DateTime GetEaster(int year)
         {
 
             int Y = year;
@@ -451,7 +450,7 @@ namespace Illuminet.Common
             int month = (h + L - 7 * m + 114) / 31;
             int day = ((h + L - 7 * m + 114) % 31) + 1;
 
-            return new DateTime(year, month, day);
+            return new System.DateTime(year, month, day);
         }
 
         /// <summary>
@@ -459,24 +458,24 @@ namespace Illuminet.Common
         /// </summary>
         /// <param name="year"></param>
         /// <returns></returns>
-        public static IDictionary<string, DateTime> GetDanishHolidays(int year)
+        public static IDictionary<string, System.DateTime> GetDanishHolidays(int year)
         {
             var easterDependentHolidays = GetEasterDependentHolidays(year);
 
             var fixedHolidays = GetFixedHolidays(year);
 
-            IDictionary<string, DateTime> allHolidays = easterDependentHolidays.Union(fixedHolidays).ToDictionary(pair => pair.Key, pair => pair.Value);
+            IDictionary<string, System.DateTime> allHolidays = easterDependentHolidays.Union(fixedHolidays).ToDictionary(pair => pair.Key, pair => pair.Value);
             
             return allHolidays;
         }
 
-        public static IEnumerable<KeyValuePair<string, DateTime>> GetEasterDependentHolidays(int year)
+        public static IEnumerable<KeyValuePair<string, System.DateTime>> GetEasterDependentHolidays(int year)
         {
             var easter = GetEaster(year);
             return _holidaysRelativeToEaster.ToDictionary(h => h.Key, h => easter.AddDays(h.Value));
         }
 
-        public static IEnumerable<KeyValuePair<string, DateTime>> GetFixedHolidays(int year)
+        public static IEnumerable<KeyValuePair<string, System.DateTime>> GetFixedHolidays(int year)
         {
             return _fixedHolidays.ToDictionary(f => f.Key, f => f.Value.AddYears(year - 1));
         }
